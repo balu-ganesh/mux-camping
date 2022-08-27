@@ -21,8 +21,7 @@ func main() {
 		Addr:           ":8080",
 		Handler:        handlers.CombinedLoggingHandler(os.Stdout, server),
 		ReadTimeout:    30 * time.Second,
-		WriteTimeout:   30 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+		WriteTimeout:   30 * time.Second
 	}
 
 	c := make(chan os.Signal, 1)
@@ -37,7 +36,7 @@ func main() {
 		log.Printf("now os.Exit()")
 		os.Exit(1)
 	}()
-	log.Println("Starting the server end point")
+	log.Println("Starting the camping server end point")
 	log.Fatal(s.ListenAndServe())
 
 }
