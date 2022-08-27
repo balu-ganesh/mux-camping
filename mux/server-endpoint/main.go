@@ -18,10 +18,10 @@ func main() {
 	server := server.New(server.Local(false))
 
 	s := &http.Server{
-		Addr:           ":8080",
-		Handler:        handlers.CombinedLoggingHandler(os.Stdout, server),
-		ReadTimeout:    30 * time.Second,
-		WriteTimeout:   30 * time.Second
+		Addr:         ":8080",
+		Handler:      handlers.CombinedLoggingHandler(os.Stdout, server),
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
 	}
 
 	c := make(chan os.Signal, 1)
