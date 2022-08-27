@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -15,13 +14,8 @@ import (
 )
 
 func main() {
-	// log.Printf("Build date: %v Build hash: %v Build number: %v", version.Date, version.Hash, version.Build)
-	// log.Printf("Starting up adapter endpoint...\n\n")
 
-	var isLocal bool
-	flag.BoolVar(&isLocal, "local", false, "set local to true if the adapter endpoint is a dev environment")
-	flag.Parse()
-	server := server.New(server.Local(isLocal))
+	server := server.New(server.Local(false))
 
 	s := &http.Server{
 		Addr:           ":8080",
@@ -35,7 +29,7 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		log.Print("we get signal, main screen turn on! calling http.Server.Shutdown()")
+		log.Print("calling http.Server.Shutdown()")
 		err := s.Shutdown(context.Background())
 		if err != nil {
 			log.Printf("http.Server.Shutdown returned err '%s'", err.Error())
