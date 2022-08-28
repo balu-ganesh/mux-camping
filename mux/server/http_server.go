@@ -79,3 +79,14 @@ func writeHTTPError(res http.ResponseWriter, err interface{}) {
 	statusCode = http.StatusInternalServerError
 	httpError = fmt.Errorf("%v", err)
 }
+
+func writeHTTPResponse(res http.ResponseWriter, val interface{}) {
+	jsonData, err := json.Marshal(val)
+	if err != nil {
+		writeHTTPError(res, err)
+		return
+	}
+
+	res.Header().Set("Content-Type", "application/json")
+	res.Write(jsonData)
+}

@@ -61,10 +61,13 @@ func (m *MySQLRepository) GetAllAvailableSlotsByDate(startDate time.Time, endDat
 }
 
 func (b *MySQLRepository) GetSlotByID(id uint) (*entities.AvailableSlots, error) {
+	return nil, nil
 }
 
 func (b *MySQLRepository) BookSlot(booking *entities.Booking) (*entities.Booking, error) {
+	return nil, nil
 }
 
 func (b *MySQLRepository) GetBookedSlotsByUserID(userID string) ([]entities.Booking, error) {
+	return nil, nil
 }

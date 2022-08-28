@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -14,41 +15,44 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func (h HTTPServer) GetAllAvailableSlotsByDate(w http.ResponseWriter, r *http.Request) {
+func (h HTTPServer) GetAllAvailableSlotsByDate(res http.ResponseWriter, req *http.Request) {
 
-	params := r.URL.Query()
+	params := req.URL.Query()
 	var startDate, endDate time.Time
 	layout := "2006-01-02 15:04"
+
 	if s, ok := params["start"]; ok {
 		date, err := time.Parse(layout, s[0])
 		if err != nil {
 			log.Println("error occured while parsing input params ", err)
+			writeHTTPError(res, &BadRequestError{err: ErrNoSlotID})
+			return
 		}
 		startDate = date
 	} else {
-		fmt.Print("no start date params in request")
+		writeHTTPError(res, &BadRequestError{err: errors.New("no start date params in request")})
+		return
 	}
 	if s, ok := params["end"]; ok {
 		date, err := time.Parse(layout, s[0])
 		if err != nil {
 			log.Println("error occured while parsing input params")
+			writeHTTPError(res, &BadRequestError{err: errors.New("error occured while parsing end date")})
+			return
 		}
 		endDate = date
-		fmt.Println(date, err)
 	} else {
-		fmt.Print("no end date params in request")
+		writeHTTPError(res, &BadRequestError{err: errors.New("no end date params in request")})
+		return
 	}
-	bookingService := services.GetInstance()
 
+	bookingService := services.GetInstance()
 	b, err := bookingService.GetAllAvailableSlotsByDate(startDate, endDate)
 	if err != nil {
 		log.Print("error occured while booking slot ", err)
+		writeHTTPError(res, errors.New("error occured while processing"+err.Error()))
 	}
-	err = json.NewEncoder(w).Encode(b)
-	if err != nil {
-		json.NewEncoder(w).Encode(err)
-	}
-
+	writeHTTPResponse(res, b)
 }
 
 // TODO : json unmarshaller needs to be added for date fields.
@@ -60,24 +64,39 @@ func (h HTTPServer) ReserveSlot(res http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var bookslot entities.BookSlot
-
+	layout := "2006-01-02 15:04"
 	json.Unmarshal(reqBody, &bookslot)
 	vars := mux.Vars(r)
-	var slotID uint
+	var slotID, userID uint
 	if slot, ok := vars["slotid"]; !ok {
 		writeHTTPError(res, &BadRequestError{err: ErrNoSlotID})
 		return
 	} else {
 		u64, err := strconv.ParseUint(slot, 10, 32)
 		if err != nil {
-			fmt.Println(err)
+			writeHTTPError(res, errors.New("slot id should be a number"))
 		}
 		slotID = uint(u64)
+	}
+	if userid, ok := vars["userid"]; !ok {
+		writeHTTPError(res, &BadRequestError{err: ErrNoUserID})
+		return
+	} else {
+		u64, err := strconv.ParseUint(userid, 10, 32)
+		if err != nil {
+			writeHTTPError(res, errors.New("user id should be a number"))
+		}
+		userID = uint(u64)
+	}
+
+	if bookslot.CheckInDate == "" && bookslot.CheckoutDate == "" {
+		bookslot.CheckInDate = time.Now().Format(layout)
+		bookslot.CheckoutDate = time.Now().Add(time.Hour * 24 * 30).Format(layout)
 	}
 
 	bookingService := services.GetInstance()
 
-	b, err := bookingService.BookSlot(bookslot, uint(slotID))
+	b, err := bookingService.BookSlot(bookslot, uint(slotID), uint(userID))
 	if err != nil {
 		log.Print("error occured while booking slot ", err)
 		writeHTTPError(res, err)
@@ -121,23 +140,12 @@ func (h HTTPServer) ManageSlot(res http.ResponseWriter, r *http.Request) {
 	}
 
 	bookingService := services.GetInstance()
-	b, err := bookingService.BookSlot(bookslot, slotID)
+	b, err := bookingService.BookSlot(bookslot, slotID, 123)
 	if err != nil {
 		log.Print("error occured while booking slot ", err)
 	}
 	res.Header().Set("Content-Type", "application/json")
 	writeHTTPResponse(res, b)
-}
-
-func writeHTTPResponse(res http.ResponseWriter, val interface{}) {
-	jsonData, err := json.Marshal(val)
-	if err != nil {
-		writeHTTPError(res, err)
-		return
-	}
-
-	res.Header().Set("Content-Type", "application/json")
-	res.Write(jsonData)
 }
 
 func (h HTTPServer) CancelBooking(res http.ResponseWriter, r *http.Request) {
@@ -157,7 +165,7 @@ func (h HTTPServer) CancelBooking(res http.ResponseWriter, r *http.Request) {
 		slotID = uint(u64)
 	}
 	bookingService := services.GetInstance()
-	b, err := bookingService.BookSlot(bookslot, slotID)
+	b, err := bookingService.BookSlot(bookslot, slotID, 123)
 	if err != nil {
 		log.Print("error occured while booking slot ", err)
 	}

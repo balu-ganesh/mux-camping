@@ -25,6 +25,13 @@ func TestGetSlot(t *testing.T) {
 			},
 			http.StatusOK,
 		},
+		"startDateEmpty": {
+			map[string]string{
+				"startDate": "2022-08-25 12:00",
+				"endDate":   "2022-08-25 12:00",
+			},
+			http.StatusOK,
+		},
 	}
 
 	for _, tp := range testCases {

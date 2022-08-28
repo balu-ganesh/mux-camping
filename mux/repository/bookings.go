@@ -50,7 +50,6 @@ func (b *BookingRepostory) GetSlotByID(id uint) (*entities.AvailableSlots, error
 }
 
 func (b *BookingRepostory) BookSlot(booking *entities.Booking) (*entities.Booking, error) {
-	fmt.Println("booking started ")
 	db, err := database.GetDB()
 	if err != nil {
 		return nil, err

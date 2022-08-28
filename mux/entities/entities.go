@@ -44,7 +44,8 @@ type Booking struct {
 	Description string    `json:"description"`
 	SlotID      uint      `json:"slotID"`
 	Slot        Slot      `gorm:"foreignKey:ID;references:SlotID"`
-	User        User      `gorm:"foreignKey:ID"`
+	UserID      uint      `json:"userID"`
+	User        User      `gorm:"foreignKey:ID;references:UserID"`
 }
 
 type BookSlot struct {
@@ -54,6 +55,7 @@ type BookSlot struct {
 	LastName     string `json:"lastName"`
 	CheckInDate  string `json:"checkInDate"`
 	CheckoutDate string `json:"checkoutDate"`
+	Description  string `json:"description"`
 }
 
 type AvailableSlots struct {

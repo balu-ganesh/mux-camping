@@ -42,7 +42,7 @@ func (b *Booking) ModifyBooking() {
 	//Merge the updates
 }
 
-func (b *Booking) BookSlot(bookSlot entities.BookSlot, slotID uint) (*entities.Booking, error) {
+func (b *Booking) BookSlot(bookSlot entities.BookSlot, slotID uint, userID uint) (*entities.Booking, error) {
 
 	layout := "2006-01-02 15:04"
 
@@ -62,7 +62,8 @@ func (b *Booking) BookSlot(bookSlot entities.BookSlot, slotID uint) (*entities.B
 		SlotID:      slotID,
 		StartDate:   startDate,
 		EndDate:     endDate,
-		Description: "booking",
+		Description: bookSlot.Description,
+		UserID:      userID,
 		User: entities.User{
 			FirstName: bookSlot.FirstName,
 			LastName:  bookSlot.LastName,
