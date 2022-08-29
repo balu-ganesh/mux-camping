@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"testing"
@@ -44,20 +43,20 @@ func Test_GetAllAvailableSlotsByDate(t *testing.T) {
 
 		startDate, err := time.Parse(layout, tp.params["startDate"])
 		if err != nil {
-			log.Println("error occured while parsing input params ", err)
+			t.Fatalf("error occured while parsing input params %+v ", err)
 		}
 
 		endDate, err := time.Parse(layout, tp.params["endDate"])
 		if err != nil {
-			log.Println("error occured while parsing input params ", err)
+			t.Fatalf("error occured while parsing input params %+v", err)
 		}
 
 		slots, err := repo.GetAllAvailableSlotsByDate(startDate, endDate)
 		if err != nil {
-			fmt.Errorf("error occured while accessing available slots %+v", err)
+			t.Fatalf("error occured while accessing available slots %+v", err)
 		}
 		if slots == nil {
-			fmt.Errorf("no available slots %+v", err)
+			t.Fatalf("no available slots %+v", err)
 		}
 	}
 
@@ -96,22 +95,22 @@ func Test_BookSlot(t *testing.T) {
 
 		startDate, err := time.Parse(layout, tp.startDate)
 		if err != nil {
-			log.Println("error occured while parsing input params ", err)
+			t.Fatalf("error occured while parsing input params %+v", err)
 		}
 
 		endDate, err := time.Parse(layout, tp.endDate)
 		if err != nil {
-			log.Println("error occured while parsing input params ", err)
+			t.Fatalf("error occured while parsing input params %+v", err)
 		}
 		tp.params.StartDate = startDate
 		tp.params.EndDate = endDate
 
 		slots, err := repo.BookSlot(&tp.params)
 		if err != nil {
-			fmt.Errorf("error occured while accessing available slots %+v", err)
+			t.Fatalf("error occured while accessing available slots %+v", err)
 		}
 		if slots == nil {
-			fmt.Errorf("no available slots %+v", err)
+			t.Fatalf("no available slots %+v", err)
 		}
 	}
 
@@ -150,12 +149,12 @@ func Test_BookSlotMultiUser(t *testing.T) {
 
 		startDate, err := time.Parse(layout, tp.startDate)
 		if err != nil {
-			log.Println("error occured while parsing input params ", err)
+			t.Fatalf("error occured while parsing input params %+v", err)
 		}
 
 		endDate, err := time.Parse(layout, tp.endDate)
 		if err != nil {
-			log.Println("error occured while parsing input params ", err)
+			t.Fatalf("error occured while parsing input params %+v", err)
 		}
 		tp.params.StartDate = startDate
 		tp.params.EndDate = endDate
@@ -166,17 +165,17 @@ func Test_BookSlotMultiUser(t *testing.T) {
 			go func() {
 				slots, err := repo.BookSlot(&tp.params)
 				if err != nil {
-					fmt.Errorf("error occured while accessing available slots %+v", err)
+					log.Fatalf("error occured while accessing available slots %+v", err)
 				}
 				if slots == nil {
-					fmt.Errorf("no available slots %+v", err)
+					log.Fatalf("no available slots %+v", err)
 				}
 				done <- true
 			}()
-			fmt.Println("waiting to finish two simultaneous booking")
+			log.Println("waiting to finish two simultaneous booking")
 		}
 		for i := 0; i < 2; i++ {
-			fmt.Println(<-done)
+			log.Println(<-done)
 		}
 	}
 
